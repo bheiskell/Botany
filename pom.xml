@@ -83,7 +83,7 @@
     <resources>
       <resource>
         <!-- all resources are in project root -->
-        <directory>src/main/resources</directory>
+        <directory>.</directory>
         <includes>
           <include>config.yml</include>
           <include>plants.csv</include>
