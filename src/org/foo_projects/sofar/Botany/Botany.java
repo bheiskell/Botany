@@ -245,6 +245,7 @@ public final class Botany extends JavaPlugin {
 		BlockFace[] sides = { BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST };
 
 		Block b = world.getHighestBlockAt(x, z);
+		Block bOriginal = b;
 
 		/* do not consider planting in chunks that have just recently been
 		 * loaded, as this could flood the server with chunk load requests
@@ -278,16 +279,22 @@ public final class Botany extends JavaPlugin {
 			b = b.getRelative(BlockFace.DOWN);
 			canopy = true;
 		}
-		
-		/* do not replace leaves on the ground */
-		if (canopy && b.getType() != Material.AIR) {
-			return;
-		}
 
 nextplant:
 		for (plantMatrix pm: pml) {
 			long count = 0;
 			long found = 0;
+
+			/* If the target is a leaf itself, then we need to back-up the changes made above.
+			 * This is buggy given it changes the `b` variable for the remaining loop. 
+			 */
+			if (isLeaf(pm.base_type)) {
+				b = bOriginal;
+
+			/* do not replace leaves on the ground */
+			} else if (canopy && b.getType() != Material.AIR) {
+				continue;
+			}
 
 			// are these plant types enabled?
 			if (pm.target_type == Material.SAPLING && (!conf_saplings))
