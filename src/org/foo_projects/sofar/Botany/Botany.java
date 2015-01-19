@@ -274,9 +274,7 @@ public final class Botany extends JavaPlugin {
 		Collections.shuffle(pml);
 
 		/* We can plant under existing trees */
-		while ((b.getRelative(BlockFace.DOWN).getType() == Material.LEAVES) ||
-				(b.getRelative(BlockFace.DOWN).getType() == Material.LEAVES_2) ||
-						(b.getRelative(BlockFace.DOWN).getType() == Material.AIR)) {
+		while (isLeafOrAir(b.getRelative(BlockFace.DOWN).getType())) {
 			b = b.getRelative(BlockFace.DOWN);
 			canopy = true;
 		}
@@ -362,8 +360,8 @@ nextplant:
 						h = h.getRelative(BlockFace.DOWN);
 
 					/* if we're not scanning for leaves, lower scan to beneath any */
-					if ((pm.scan_type != Material.LEAVES) && (pm.scan_type != Material.LEAVES_2)) {
-						while (h.getType() == Material.LEAVES || h.getType() == Material.LEAVES_2 || h.getRelative(BlockFace.DOWN).getType() == Material.AIR)
+					if (!isLeaf(pm.scan_type)) {
+						while (isLeaf(h.getType()) || h.getRelative(BlockFace.DOWN).getType() == Material.AIR)
 							h = h.getRelative(BlockFace.DOWN);
 					}
 
@@ -495,6 +493,14 @@ nextplant:
 				return;
 			}
 		}
+	}
+
+	private boolean isLeafOrAir(Material mat) {
+		return isLeaf(mat) || mat == Material.AIR;
+	}
+	
+	private boolean isLeaf(Material mat) {
+		return (mat == Material.LEAVES) || (mat == Material.LEAVES_2);
 	}
 
 	private class BotanyRunnable implements Runnable {
@@ -645,7 +651,7 @@ command:
 								area++;
 
 								/* scan under foliage */
-								if ((scan.getType() == Material.LEAVES) || (scan.getType() == Material.LEAVES_2)) {
+								if (isLeaf(scan.getType())) {
 									/* first, add this plant type to the scan results */
 									Material mat = scan.getType();
 									String name = mat.toString() + ":" + getSimpleData(scan);
@@ -657,7 +663,7 @@ command:
 									/* second, scan further below */
 									while (true) {
 										Material m = scan.getRelative(BlockFace.DOWN).getType();
-										if ((m == Material.AIR) || (m == Material.LEAVES) || (m == Material.LEAVES_2)) {
+										if (isLeafOrAir(m)) {
 											scan = scan.getRelative(BlockFace.DOWN);
 										} else {
 											break;
