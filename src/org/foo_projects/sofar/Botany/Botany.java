@@ -79,8 +79,9 @@ public final class Botany extends JavaPlugin {
 		public byte     scan_data;
 		public double   density;
 		public long     radius;
+		public double   probability;
 
-		public plantMatrix(Material tt, byte td, Material bt, Material st, byte sd, double d, long r) {
+		public plantMatrix(Material tt, byte td, Material bt, Material st, byte sd, double d, long r, double p) {
 			target_type = tt;
 			target_data = td;
 			base_type = bt;
@@ -88,6 +89,7 @@ public final class Botany extends JavaPlugin {
 			scan_data = sd;
 			density = d;
 			radius = r;
+			probability = p;
 		}
 	}
 
@@ -284,6 +286,14 @@ nextplant:
 		for (plantMatrix pm: pml) {
 			long count = 0;
 			long found = 0;
+			
+			// perform a probability check, and skip the entire matrix if it misses
+			if (pm.probability < 1.0) {
+				Random rnd = new Random();
+				if (rnd.nextDouble() > pm.probability) {
+					continue;
+				}
+			}
 
 			/* If the target is a leaf itself, then we need to back-up the changes made above.
 			 * This is buggy given it changes the `b` variable for the remaining loop. 
@@ -820,7 +830,7 @@ command:
 					continue;
 				}
 
-				if (split.length != 5) {
+				if (split.length < 5) {
 					getLogger().info("Error parsing plants.csv at line " + lineno);
 					continue;
 				}
@@ -874,10 +884,16 @@ command:
 				double d = Double.parseDouble(split[4]) * conf_density;
 				if (d > 1.0)
 					d = 1.0;
+				
+				// backwards compatibility for original plants.csv file format
+				double p = (split.length >= 6) ? Double.parseDouble(split[5]) : 1.0;
+				if (p > 1.0)
+					p = 1.0;
 
 				/* finally, derive radius from density with a sane minimum */
 				plantMatrix pm = new plantMatrix(tt, td, bt, st, sd, d,
-						Math.max(8, (long)Math.sqrt(1 / Double.parseDouble(split[4])))
+						Math.max(8, (long)Math.sqrt(1 / Double.parseDouble(split[4]))),
+						p
 						);
 
 				List<plantMatrix> pml;
