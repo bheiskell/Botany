@@ -277,7 +277,7 @@ public final class Botany extends JavaPlugin {
 		Collections.shuffle(pml);
 
 		/* We can plant under existing trees */
-		while (isLeafOrAir(b.getRelative(BlockFace.DOWN).getType())) {
+		while (b.getY() != 0 && isLeafOrAir(b.getRelative(BlockFace.DOWN).getType())) {
 			b = b.getRelative(BlockFace.DOWN);
 			canopy = true;
 		}
